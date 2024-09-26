@@ -105,7 +105,7 @@ void MainWindow::on_actionOpen_triggered()
     serial->setBaudRate(port_settings->selected_baudrate);
     serial->setPortName(port_settings->selected_port);
 
-    if (serial->open(QIODevice::ReadOnly))
+    if (serial->open(QIODevice::ReadWrite))
     {
         connect(serial, &QSerialPort::readyRead, this, &MainWindow::readSerialData);
         ui->Output->insertPlainText("Port opened successfully!\n");
@@ -149,5 +149,39 @@ void MainWindow::on_actionAbout_triggered()
     label->setFixedSize(200, 100);
     label->setText("Ver 0.01");
     label->show();
+}
+
+
+void MainWindow::on_Input_textChanged()
+{
+    input_message.clear();
+    input_message = ui->Input->toPlainText();
+}
+
+
+void MainWindow::on_send_button_clicked()
+{
+    if(input_message.isEmpty())
+    {
+        ui->Output->insertPlainText("\nInput field is empty!\n");
+        return;
+    }
+
+    if (!serial || !serial->isOpen())
+    {
+        ui->Output->insertPlainText("\nCOM port is closed\n");
+        return;
+    }
+    QByteArray data = input_message.toUtf8();
+    serial->write(data);
+    if (!serial->waitForBytesWritten(1000))
+    {
+        ui->Output->insertPlainText("\nSend OK\n");
+    }
+    else
+    {
+        ui->Output->insertPlainText("\nError: " + serial->errorString() + "\n");
+    }
+
 }
 

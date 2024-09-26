@@ -43,13 +43,17 @@ private slots:
 
     void on_actionAbout_triggered();
 
+    void on_Input_textChanged();
+
+    void on_send_button_clicked();
+
 private:
     Ui::MainWindow *ui;
     port_settings_form* port_settings;
     int baudrate;
     QString selected_COM;
     QList<QSerialPortInfo> available_ports;
-
+    QString input_message;
 };
 
 #endif // MAINWINDOW_H
