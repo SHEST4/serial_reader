@@ -24,6 +24,7 @@ public:
     void set_baudrate(int baudrate);
     void set_COM(QString port);
     void refresh_settings();
+    void add_log(QByteArray data, bool t_r);
     QSerialPort* serial;
 private slots:
     void on_actionFind_Ports_triggered();
@@ -50,7 +51,8 @@ private slots:
 private:
     Ui::MainWindow *ui;
     port_settings_form* port_settings;
-    int baudrate;
+    int timeout = 300;
+    int baudrate = 115200;
     QString selected_COM;
     QList<QSerialPortInfo> available_ports;
     QString input_message;

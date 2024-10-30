@@ -35,7 +35,7 @@
    <property name="geometry">
     <rect>
      <x>80</x>
-     <y>150</y>
+     <y>170</y>
      <width>31</width>
      <height>24</height>
     </rect>
@@ -44,13 +44,13 @@
     <string>OK</string>
    </property>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>19</x>
-     <y>0</y>
+     <y>10</y>
      <width>161</width>
-     <height>131</height>
+     <height>141</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
@@ -64,20 +64,34 @@
       </property>
      </widget>
     </item>
+    <item row="0" column="1">
+     <widget class="QComboBox" name="comboBox_COM"/>
+    </item>
     <item row="1" column="1">
      <widget class="QLineEdit" name="lineEdit_baudrate">
       <property name="text">
-       <string>0</string>
+       <string>115200</string>
       </property>
      </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QComboBox" name="comboBox_COM"/>
     </item>
     <item row="1" column="0">
      <widget class="QLabel" name="Baudrate_Label">
       <property name="text">
        <string>Baudrate</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QLineEdit" name="lineEdit_timeout">
+      <property name="text">
+       <string>300</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="Timeout_Label">
+      <property name="text">
+       <string>Timeout</string>
       </property>
      </widget>
     </item>

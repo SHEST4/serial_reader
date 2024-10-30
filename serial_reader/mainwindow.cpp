@@ -2,7 +2,7 @@
 #include "ui_mainwindow.h"
 
 #include <QComboBox>
-
+#include <QDateTime>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -11,7 +11,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     find_and_print_ports();
     port_settings = nullptr;
-    set_baudrate(0);
+    serial = new QSerialPort(this);
+    set_baudrate(baudrate);
     set_COM(available_ports[0].portName());
 
 }
@@ -66,6 +67,8 @@ void MainWindow::set_baudrate(int baudrate)
 
 void MainWindow::set_COM(QString port)
 {
+    selected_COM.clear();
+    selected_COM = port;
     ui->selected_port->setText(port);
 }
 
@@ -96,25 +99,25 @@ void MainWindow::on_actionClear_input_window_triggered()
 
 void MainWindow::on_actionOpen_triggered()
 {
-    if(port_settings == nullptr || port_settings->selected_baudrate <= 0 || port_settings->selected_port.isEmpty())
+    if(baudrate <= 0 || selected_COM.isEmpty())
     {
-        ui->Output->insertPlainText("ERROR Incorrect baudrate or port name\n");
+        ui->Output->insertPlainText("\nERROR Incorrect baudrate or port name\n");
         return;
     }
-    serial = new QSerialPort(this);
-    serial->setBaudRate(port_settings->selected_baudrate);
-    serial->setPortName(port_settings->selected_port);
+
+    serial->setBaudRate(baudrate);
+    serial->setPortName(selected_COM);
 
     if (serial->open(QIODevice::ReadWrite))
     {
         connect(serial, &QSerialPort::readyRead, this, &MainWindow::readSerialData);
-        ui->Output->insertPlainText("Port opened successfully!\n");
+        ui->Output->insertPlainText("\nPort opened successfully!\n");
         QByteArray data = serial->readAll();
         ui->Output->insertPlainText(data);
     }
     else
     {
-        ui->Output->setText("Failed to open port: "+serial->errorString() + "\n");
+        ui->Output->setText("Failed to open port: "+serial->errorString());
     }
 }
 
@@ -127,7 +130,8 @@ void MainWindow::readSerialData()
     {
         text = text.left(index);
     }
-    ui->Output->insertPlainText(text);
+    ui->Output->insertPlainText("<<<"+this->selected_COM+"<<<"+text+'\n');
+    add_log(text.toUtf8(), false);
     QTextCursor cursor = ui->Output->textCursor();
     cursor.movePosition(QTextCursor::End);
     ui->Output->setTextCursor(cursor);
@@ -138,6 +142,7 @@ void MainWindow::on_actionClose_triggered()
     if (serial && serial->isOpen())
     {
         disconnect(serial, &QSerialPort::readyRead, this, &MainWindow::readSerialData);
+        serial->close();
         ui->Output->insertPlainText("\nStopped reading from port.\n");
     }
 }
@@ -173,14 +178,39 @@ void MainWindow::on_send_button_clicked()
         return;
     }
     QByteArray data = input_message.toUtf8();
+    data.push_back(0x0D);
+    data.push_back(0x0A);
     serial->write(data);
-    if (!serial->waitForBytesWritten(1000))
+
+    ui->Output->insertPlainText("\n>>>"+this->selected_COM+">>>"+data);
+    add_log(data, true);
+
+}
+
+void MainWindow::add_log(QByteArray data, bool t_r)
+{
+    QDateTime current_datetime = QDateTime::currentDateTime();
+    QString hexString;
+    ui->Log->insertPlainText("-------------------------------\n");
+    if(t_r)
     {
-        ui->Output->insertPlainText("\nSend OK\n");
+        ui->Log->insertPlainText(current_datetime.toString() + " SEND:\n" + data);
+        for (int i = 0; i < data.size(); ++i)
+        {
+            hexString.append(QString::number(static_cast<unsigned char>(data[i]), 16).rightJustified(2, '0'));
+            hexString.append(" ");
+        }
+        ui->Log->insertPlainText(hexString.toUpper()+"\r\n");
     }
     else
     {
-        ui->Output->insertPlainText("\nError: " + serial->errorString() + "\n");
+        ui->Log->insertPlainText(current_datetime.toString() + " RECEIVE: " + data + " ");
+        for (int i = 0; i < data.size(); ++i)
+        {
+            hexString.append(QString::number(static_cast<unsigned char>(data[i]), 16).rightJustified(2, '0'));
+            hexString.append(" ");
+        }
+        ui->Log->insertPlainText(hexString.toUpper()+"\r\n");
     }
 
 }

@@ -33,6 +33,7 @@ void port_settings_form::on_lineEdit_baudrate_textChanged(const QString &arg1)
 void port_settings_form::on_OK_Button_settings_form_clicked()
 {
     selected_port = ui->comboBox_COM->currentText();
+    selected_baudrate = ui->lineEdit_baudrate->text().toInt();
     emit settingsUpdated(selected_baudrate, selected_port);
     port_settings_form::close();
 }
